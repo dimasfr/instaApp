@@ -1,6 +1,6 @@
 import './bootstrap';
 import { createApp } from 'vue';
 import App from './App.vue';
-import LoginPage from './pages/LoginPage.vue';
+import router from "./router";
 
-createApp(LoginPage).mount('#app');
+createApp(App).use(router).mount('#app');
