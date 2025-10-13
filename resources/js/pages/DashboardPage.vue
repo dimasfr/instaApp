@@ -24,19 +24,48 @@
         placeholder="Apa yang sedang Anda pikirkan?"
         class="w-full border rounded p-2 mb-2"
       ></textarea>
-      <input 
-        type="file" 
-        multiple 
-        @change="handleFiles" 
-        class="mb-2"
-      />
-      <button 
-        @click="submitPost"
-        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Post
-      </button>
+
+      <div class="mb-2">
+        <input 
+          type="file" 
+          ref="fileInput"
+          multiple 
+          accept="image/*"
+          @change="handleFiles" 
+          class="mb-2"
+        />
+      </div>
+
+      <!-- Preview gambar sebelum upload -->
+      <div class="flex gap-2 flex-wrap">
+        <div
+          v-for="(photo, index) in previewImages"
+          :key="index"
+          class="relative w-24 h-24"
+        >
+          <img
+            :src="photo"
+            class="w-full h-full object-cover rounded-md border"
+          />
+          <button
+            @click="removeImage(index)"
+            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button 
+          @click="submitPost"
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Post
+        </button>
+      </div>
     </div>
+
 
     <div v-if="loading" class="text-center">Loading...</div>
 
@@ -175,6 +204,8 @@ const newPost = ref({
 
 const modalOpen = ref(false);
 const modalImage = ref('');
+const previewImages = ref([]);
+const fileInput = ref(null);
 
 const openModal = (url) => {
   modalImage.value = url;
@@ -185,6 +216,27 @@ const closeModal = () => {
   modalOpen.value = false;
   modalImage.value = '';
 };
+
+// Handle file input
+const handleFiles = (event) => {
+  const files = Array.from(event.target.files)
+  newPost.value.photos = files
+
+  // Buat preview URL
+  previewImages.value = files.map(f => URL.createObjectURL(f))
+}
+
+// Hapus satu gambar
+const removeImage = (index) => {
+  files.value.splice(index, 1)
+  previewImages.value.splice(index, 1)
+}
+
+// Hapus preview satuan
+const removePreview = (index) => {
+  previewImages.value.splice(index, 1)
+  newPost.value.photos.splice(index, 1)
+}
 
 const fetchPosts = async () => {
   loading.value = true;
@@ -217,7 +269,6 @@ const submitComment = async (post) => {
   if (!post.new_comment) return;
   try {
     const res = await postService.addComment(post.id, post.new_comment);
-    console.log(res);
     res.data = { ...res.data, name: res.data.user.name }; // Tambah nama user ke response
     post.comments.push(res.data);
     post.new_comment = '';
@@ -292,11 +343,6 @@ const formatDate = (dateStr) => {
   return d.toLocaleString();
 };
 
-// Handle file input
-const handleFiles = (event) => {
-  newPost.value.photos = Array.from(event.target.files);
-};
-
 // Submit new post
 const submitPost = async () => {
   if (!newPost.value.content && newPost.value.photos.length === 0) {
@@ -310,8 +356,17 @@ const submitPost = async () => {
 
   try {
     await postService.createPost(formData);
-    newPost.value.content = '';
-    newPost.value.photos = [];
+    // Reset setelah sukses
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+
+    newPost.value.content = ''
+    newPost.value.photos = []
+    previewImages.value.forEach((url) => URL.revokeObjectURL(url))
+    previewImages.value = []
+
+    alert('Postingan berhasil diunggah!')
     fetchPosts(); // refresh linimasa
   } catch (err) {
     console.error(err);
