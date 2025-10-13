@@ -38,15 +38,33 @@
         ></textarea>
 
         <div class="mb-2">
-          <input 
-            type="file" 
+          <label class="block text-sm font-semibold mb-1">Pilih Foto:</label>
+
+          <!-- Input file disembunyikan -->
+          <input
+            type="file"
             ref="fileInput"
-            multiple 
+            multiple
             accept="image/*"
-            @change="handleFiles" 
-            class="mb-2"
+            @change="handleFiles"
+            class="hidden"
           />
+
+          <!-- Tombol custom -->
+          <button
+            type="button"
+            @click="fileInput.click()"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm transition"
+          >
+            Pilih File
+          </button>
+
+          <!-- Tampilkan jumlah file yang dipilih -->
+          <span v-if="newPost.photos.length" class="ml-2 text-gray-600 text-sm">
+            {{ newPost.photos.length }} file{{ newPost.photos.length > 1 ? 's' : '' }} dipilih
+          </span>
         </div>
+
 
         <!-- Preview gambar sebelum upload -->
         <div class="flex gap-2 flex-wrap">
@@ -254,18 +272,32 @@ const closeModal = () => {
 
 // Handle file input
 const handleFiles = (event) => {
-  const files = Array.from(event.target.files)
-  newPost.value.photos = files
+  const files = Array.from(event.target.files);
 
-  // Buat preview URL
-  previewImages.value = files.map(f => URL.createObjectURL(f))
-}
+  // Gabungkan file baru dengan yang sudah ada
+  newPost.value.photos = [...newPost.value.photos, ...files];
+
+  // Hapus preview lama agar tidak bocor memory
+  previewImages.value.forEach(url => URL.revokeObjectURL(url));
+
+  // Buat ulang semua preview berdasarkan daftar file terbaru
+  previewImages.value = newPost.value.photos.map(f => URL.createObjectURL(f));
+
+  // Reset input agar bisa pilih file yang sama lagi nanti
+  event.target.value = "";
+};
 
 // Hapus satu gambar
 const removeImage = (index) => {
-  files.value.splice(index, 1)
-  previewImages.value.splice(index, 1)
-}
+  // Revoke URL agar tidak leak memory
+  URL.revokeObjectURL(previewImages.value[index]);
+
+  // Hapus item dari kedua array
+  newPost.value.photos.splice(index, 1);
+  previewImages.value.splice(index, 1);
+
+  // Tidak perlu reset input di sini — biarkan kosong
+};
 
 const fetchPosts = async () => {
   loading.value = true;
