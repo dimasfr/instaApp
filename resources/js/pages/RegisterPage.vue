@@ -65,10 +65,12 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
 import api from "@/utils/api";
+import { useToast } from "@/utils/toast";
 
 const router = useRouter();
+const { showToast } = useToast();
+
 const form = ref({
   name: "",
   email: "",
@@ -81,11 +83,12 @@ const handleRegister = async () => {
     const response = await api.post("api/register", form.value);
     console.log(response.data);
 
-    alert("Registration successful!");
+    showToast("Registrasi berhasil! Silakan login 🎉", "success");
     router.push("/login");
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.message || "Registration failed!";
+    const message = err.response?.data?.message || "Registrasi gagal!";
+    showToast(message, "error");
   }
 };
 </script>

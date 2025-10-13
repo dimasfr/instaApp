@@ -47,8 +47,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from "vue-router";
+import { useToast } from "@/utils/toast";
 
 import api from "@/utils/api";
+const { showToast } = useToast();
 
 const router = useRouter();
 const form = ref({
@@ -61,10 +63,13 @@ const handleLogin = async () => {
   try {
     const res = await api.post("api/login", form.value);
     localStorage.setItem("token", res.data.access_token);
+
+    showToast("Login berhasil! Selamat datang 👋", "success");
     router.push("/dashboard");
   } catch (err) {
     console.error(err);
-    error.value = err.response?.data?.message || "Login failed!";
+    const message = err.response?.data?.message || "Login gagal!";
+    showToast(message, "error");
   }
 }
 </script>
