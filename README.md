@@ -1,61 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📸 Laravel + Vue Timeline App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simple social timeline application built with **Laravel** as the backend API and **Vue 3** as the frontend.  
+Users can register, login, create posts with multiple photos, like/unlike posts, and comment — similar to a simplified Instagram feed.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 👤 Authentication
+- User registration & login (JWT-based)
+- Persistent session with token storage
+- Redirect handling on login/logout
+- Public dashboard accessible even without login (limited view)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 📰 Post Management
+- Create post with text and multiple images
+- Soft delete and hard delete support for posts
+- Real-time post refresh after submission
+- Masked or blurred content preview for guest users (not logged in)
 
-## Learning Laravel
+### ❤️ Likes & 💬 Comments
+- Like/unlike functionality with live count
+- Comment system linked to posts
+- Restricted comment visibility for non-authenticated users
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🔔 UI Enhancements
+- Toast notifications (success, error, info)
+- Lucide icons for cleaner modern UI (Post, Like, Delete, Logout)
+- Responsive and minimal design with Tailwind CSS
+- Image preview and auto-reset on new upload
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🏗️ Tech Stack
 
-## Laravel Sponsors
+### Backend
+- **Laravel 11**
+- **Sanctum / JWT** for authentication
+- **Eloquent ORM** for database
+- **Migration + Seeder** for schema setup
+- **CORS & API routes** for Vue integration
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Frontend
+- **Vue 3 (Composition API)**
+- **Vue Router** for page navigation
+- **Axios** for API communication
+- **Tailwind CSS** for styling
+- **Lucide-Vue** for icons
+- **Toast helper** for user notifications
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## ⚙️ Installation
 
-## Contributing
+### 1️⃣ Backend (Laravel)
+```bash
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The backend will run on:
+```
+http://localhost:8000
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2️⃣ Frontend (Vue)
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
-## Security Vulnerabilities
+The frontend will run on:
+```
+http://localhost:5173
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 🔐 Authentication Flow
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Step | Description |
+|------|--------------|
+| `/register` | User registers with name, email, password |
+| `/login` | Authenticates user and returns JWT token |
+| `localStorage` | Stores token on successful login |
+| `api.js` | Automatically attaches token on every request |
+| `router.beforeEach` | Handles redirects between login/register/dashboard |
+
+---
+
+## 📂 Project Structure
+
+```
+laravel-vue-timeline/
+├── backend/ (Laravel API)
+│   ├── app/Http/Controllers/
+│   ├── database/migrations/
+│   ├── routes/api.php
+│   └── ...
+│
+└── frontend/ (Vue 3 App)
+    ├── src/
+    │   ├── pages/
+    │   │   ├── LoginPage.vue
+    │   │   ├── RegisterPage.vue
+    │   │   └── DashboardPage.vue
+    │   ├── components/
+    │   │   ├── PostCard.vue
+    │   │   ├── CommentList.vue
+    │   │   └── Toast.vue
+    │   ├── utils/
+    │   │   ├── api.js
+    │   │   └── toast.js
+    │   └── router/
+    │       └── index.js
+    └── ...
+```
+
+---
+
+## 🧩 Notable Features
+
+- ✅ Toast notification helper (`/utils/toast.js`)
+- ✅ Preview reset and revoke URL on post submission
+- ✅ File input auto-clear after successful post
+- ✅ Conditional rendering for guest vs logged-in users
+- ✅ Clean reusable components
+
+---
+
+## 🧠 Future Improvements
+- Add pagination and infinite scroll
+- Implement image lazy loading
+- Add user profile pages
+- Support comment reply (nested comments)
+- Realtime updates with Laravel Echo / Pusher
+
+---
+
+## 🧑‍💻 Author
+
+**Dimas Fajar Ramadhan**  
+Fullstack Developer — Laravel + Vue  
+📧 dimasfr918@gmail.com  
+🌐 https://github.com/dimasfr
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**.
