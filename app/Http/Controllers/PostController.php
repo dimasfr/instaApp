@@ -41,7 +41,7 @@ class PostController extends Controller
                     return [
                         'id' => $comment->id,
                         'user_id' => $comment->user_id,
-                        'user_name' => $comment->user->name,
+                        'name' => $comment->user->name,
                         'content' => $comment->content,
                         'created_at' => $comment->created_at,
                     ];
@@ -185,6 +185,17 @@ class PostController extends Controller
     {
         $comments = $post->comments()->with('user')->latest()->get();
         return response()->json($comments);
+    }
+
+    public function deleteComment(Comment $comment)
+    {
+        if ($comment->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $comment->forceDelete(); // ← Hard delete
+
+        return response()->json(['message' => 'Komentar berhasil dihapus secara permanen']);
     }
 
 }

@@ -30,3 +30,7 @@ Route::prefix('posts')->group(function () {
         Route::post('/{post}/comment', [PostController::class, 'comment']);
     });
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::delete('/comments/{comment}', [PostController::class, 'deleteComment']);
+});

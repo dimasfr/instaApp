@@ -81,9 +81,34 @@
 
         <!-- Comment list -->
         <div class="px-4 pb-2">
-          <div v-for="comment in post.comments" :key="comment.id" class="text-sm mb-1">
-            <span class="font-semibold">{{ comment.user_name }}:</span> {{ comment.content }}
+          <div
+            v-for="comment in post.comments"
+            :key="comment.id"
+            class="text-sm mb-1 flex justify-between items-center group"
+          >
+            <div>
+              <span class="font-semibold">{{ comment.name }}:</span> {{ comment.content }}
+            </div>
+
+            <!-- Tombol hapus hanya muncul jika user aktif -->
+            <button
+              v-if="user && comment.user_id === user.id"
+              @click="deleteComment(comment.id, post)"
+              class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Hapus komentar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                  class="w-4 h-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor" 
+                  stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
+
+          <!-- Input komentar -->
           <div class="flex gap-2 mt-2">
             <input 
               v-model="post.new_comment"
@@ -91,7 +116,12 @@
               class="flex-1 border rounded p-1 text-sm"
               @keyup.enter="submitComment(post)"
             />
-            <button @click="submitComment(post)" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Post</button>
+            <button 
+              @click="submitComment(post)" 
+              class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            >
+              Post
+            </button>
           </div>
         </div>
 
@@ -187,10 +217,23 @@ const submitComment = async (post) => {
   if (!post.new_comment) return;
   try {
     const res = await postService.addComment(post.id, post.new_comment);
+    console.log(res);
+    res.data = { ...res.data, name: res.data.user.name }; // Tambah nama user ke response
     post.comments.push(res.data);
     post.new_comment = '';
   } catch (err) {
     console.error(err);
+  }
+};
+
+const deleteComment = async (commentId, post) => {
+  if (!confirm("Hapus komentar ini?")) return;
+  try {
+    await postService.deleteComment(commentId);
+    post.comments = post.comments.filter(c => c.id !== commentId);
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menghapus komentar!");
   }
 };
 

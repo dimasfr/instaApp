@@ -20,10 +20,13 @@ export default {
   async addComment(postId, content) {
     return api.post(`api/posts/${postId}/comment`, { content });
   },
-  async deletePost(id, token) {
+  async deleteComment(id) {
+    return api.delete(`api/comments/${id}`);
+  },
+  async deletePost(id) {
     return api.delete(`api/posts/${id}`);
   },
-  async restorePost(id, token) {
+  async restorePost(id) {
     return api.post(`api/posts/${id}/restore`, {});
   },
 };
