@@ -5,67 +5,81 @@
       <!-- Logo / Nama App -->
       <h1 class="text-3xl font-bold text-blue-600">InstaApp</h1>
 
-      <!-- Tombol Logout -->
-      <button 
-        @click="logout"
-        class="px-3 py-1 text-sm text-white bg-gray-700 rounded hover:bg-gray-800"
+      <!-- Tombol Logout / Login -->
+      <button
+        @click="user ? logout() : goLogin()"
+        class="p-2 text-white bg-gray-700 rounded-full hover:bg-gray-800 transition duration-200"
+        :title="user ? 'Logout' : 'Login'"
       >
-        Logout
+        <component :is="user ? LogOut : LogIn" class="w-5 h-5" />
       </button>
     </header>
+
+    <div v-if="!user" class="text-center py-20">
+      <p class="text-gray-600 mb-4">Anda harus login untuk berinteraksi di linimasa.</p>
+      <button
+        @click="goLogin"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+      >
+        Login Sekarang
+      </button>
+    </div>
 
     <!-- Linimasa Title -->
     <h2 class="text-2xl font-bold text-center mb-6">Linimasa</h2>
 
     <!-- Form upload post -->
-    <div class="mb-6 p-4 bg-white rounded shadow">
-      <textarea 
-        v-model="newPost.content"
-        placeholder="Apa yang sedang Anda pikirkan?"
-        class="w-full border rounded p-2 mb-2"
-      ></textarea>
+    <div v-if="user">
+      <div class="mb-6 p-4 bg-white rounded shadow">
+        <textarea 
+          v-model="newPost.content"
+          placeholder="Apa yang sedang Anda pikirkan?"
+          class="w-full border rounded p-2 mb-2"
+        ></textarea>
 
-      <div class="mb-2">
-        <input 
-          type="file" 
-          ref="fileInput"
-          multiple 
-          accept="image/*"
-          @change="handleFiles" 
-          class="mb-2"
-        />
-      </div>
-
-      <!-- Preview gambar sebelum upload -->
-      <div class="flex gap-2 flex-wrap">
-        <div
-          v-for="(photo, index) in previewImages"
-          :key="index"
-          class="relative w-24 h-24"
-        >
-          <img
-            :src="photo"
-            class="w-full h-full object-cover rounded-md border"
+        <div class="mb-2">
+          <input 
+            type="file" 
+            ref="fileInput"
+            multiple 
+            accept="image/*"
+            @change="handleFiles" 
+            class="mb-2"
           />
-          <button
-            @click="removeImage(index)"
-            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+        </div>
+
+        <!-- Preview gambar sebelum upload -->
+        <div class="flex gap-2 flex-wrap">
+          <div
+            v-for="(photo, index) in previewImages"
+            :key="index"
+            class="relative w-24 h-24"
           >
-            ✕
+            <img
+              :src="photo"
+              class="w-full h-full object-cover rounded-md border"
+            />
+            <button
+              @click="removeImage(index)"
+              class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            @click="submitPost"
+            class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+            title="Kirim postingan"
+          >
+            <Send class="w-5 h-5" />
+            <span>Post</span>
           </button>
         </div>
       </div>
-
-      <div class="flex justify-end">
-        <button 
-          @click="submitPost"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Post
-        </button>
-      </div>
     </div>
-
 
     <div v-if="loading" class="text-center">Loading...</div>
 
@@ -74,14 +88,15 @@
         <!-- Content -->
         <div class="p-4 flex justify-between items-start">
           <p class="text-gray-800 mb-3">{{ post.content }}</p>
-          
+
           <!-- Tombol Delete jika post milik user login -->
           <button
-            v-if="user && post.user_id === user.id"
+            v-if="user && post.user.id === user.id"
             @click="deletePost(post.id)"
-            class="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
+            class="p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition duration-200"
+            title="Hapus postingan"
           >
-            Delete
+            <Trash2 class="w-5 h-5" />
           </button>
         </div>
 
@@ -97,15 +112,25 @@
         </div>
 
         <!-- Likes & Comment actions -->
-        <div class="px-4 pb-2 flex items-center gap-4">
-          <button 
-            @click="toggleLike(post)" 
-            class="px-2 py-1 rounded text-white" 
-            :class="post.liked_by_user ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-400 hover:bg-gray-500'"
+        <div class="px-4 pb-2 flex items-center gap-3">
+          <!-- Tombol Like -->
+          <button
+            @click="toggleLike(post)"
+            class="flex items-center gap-1 p-2 rounded-lg transition duration-200"
+            :class="post.liked_by_user ? 'bg-blue-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+            title="Suka"
+            v-show="user"
           >
-            {{ post.liked_by_user ? 'Unlike' : 'Like' }}
+            <ThumbsUp
+              class="w-5 h-5"
+              :class="{ 'fill-white': post.liked_by_user }"
+            />
           </button>
-          <span>{{ post.likes_count }} like{{ post.likes_count > 1 ? 's' : '' }}</span>
+
+          <!-- Jumlah like -->
+          <span class="text-gray-700 text-sm">
+            {{ post.likes_count }} like{{ post.likes_count > 1 ? 's' : '' }}
+          </span>
         </div>
 
         <!-- Comment list -->
@@ -138,18 +163,25 @@
           </div>
 
           <!-- Input komentar -->
-          <div class="flex gap-2 mt-2">
+          <div class="flex gap-2 mt-2" v-show="user">
             <input 
               v-model="post.new_comment"
               placeholder="Tulis komentar..."
               class="flex-1 border rounded p-1 text-sm"
               @keyup.enter="submitComment(post)"
             />
-            <button 
+            <!-- <button 
               @click="submitComment(post)" 
               class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
             >
               Post
+            </button> -->
+            <button
+              @click="submitComment(post)"
+              class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+              title="Kirim komentar"
+            >
+              <SendHorizontal class="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -189,12 +221,15 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import postService from '../services/postService';
+import { useToast } from "@/utils/toast";
+import { Trash2, ThumbsUp, Send, SendHorizontal, LogOut, LogIn } from "lucide-vue-next";
 
 const posts = ref({});
 const loading = ref(true);
 const page = ref(1);
 const router = useRouter();
 const user = ref(null);
+const { showToast } = useToast();
 
 // New post
 const newPost = ref({
@@ -232,12 +267,6 @@ const removeImage = (index) => {
   previewImages.value.splice(index, 1)
 }
 
-// Hapus preview satuan
-const removePreview = (index) => {
-  previewImages.value.splice(index, 1)
-  newPost.value.photos.splice(index, 1)
-}
-
 const fetchPosts = async () => {
   loading.value = true;
   try {
@@ -272,8 +301,11 @@ const submitComment = async (post) => {
     res.data = { ...res.data, name: res.data.user.name }; // Tambah nama user ke response
     post.comments.push(res.data);
     post.new_comment = '';
+    showToast("Komentar Berhasil di Unggah", "success");
   } catch (err) {
     console.error(err);
+    const message = err.response?.data?.message || "Gagal mengunggah Komentar!";
+    showToast(message, "error");
   }
 };
 
@@ -282,9 +314,11 @@ const deleteComment = async (commentId, post) => {
   try {
     await postService.deleteComment(commentId);
     post.comments = post.comments.filter(c => c.id !== commentId);
+    showToast("Komentar Berhasil di Hapus", "success");
   } catch (err) {
     console.error(err);
-    alert("Gagal menghapus komentar!");
+    const message = err.response?.data?.message || "Gagal menghapus Komentar!";
+    showToast(message, "error");
   }
 };
 
@@ -293,10 +327,12 @@ const deletePost = async (postId) => {
 
   try {
     await postService.deletePost(postId, localStorage.getItem('token'));
+    showToast("Post Berhasil di Hapus", "success");
     fetchPosts(); // refresh
   } catch (err) {
     console.error(err);
-    alert("Gagal menghapus post!");
+    const message = err.response?.data?.message || "Gagal menghapus Post!";
+    showToast(message, "error");
   }
 };
 
@@ -319,8 +355,13 @@ const fetchUser = async () => {
   }
 };
 
+const goLogin = () => {
+  router.push('/login');
+};
+
 const logout = () => {
   localStorage.removeItem('token');
+  showToast("Anda Telah Logout", "info");
   router.push('/login');
 };
 
@@ -366,11 +407,12 @@ const submitPost = async () => {
     previewImages.value.forEach((url) => URL.revokeObjectURL(url))
     previewImages.value = []
 
-    alert('Postingan berhasil diunggah!')
+    showToast("Postingan berhasil diunggah!", "success");
     fetchPosts(); // refresh linimasa
   } catch (err) {
     console.error(err);
-    alert("Gagal membuat post!");
+    const message = err.response?.data?.message || "Gagal membuat post!";
+    showToast(message, "error");
   }
 };
 
