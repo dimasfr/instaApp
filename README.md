@@ -100,7 +100,7 @@ http://localhost:5173
 ## 📂 Project Structure
 
 ```
-laravel-vue-timeline/
+instaApp/
 ├── backend/ (Laravel API)
 │   ├── app/Http/Controllers/
 │   ├── database/migrations/
